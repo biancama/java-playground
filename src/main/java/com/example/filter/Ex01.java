@@ -1,10 +1,8 @@
 package com.example.filter;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Ex01 {
     public static List<Task> getTasksWithHigherFrequencyImperative(List<Task> tasks) {
@@ -29,7 +27,15 @@ public class Ex01 {
 
 
     public static List<Task> getTasksWithHigherFrequencyFunctional(List<Task> tasks) {
-        return null;
+        var map = tasks.stream().collect(Collectors.groupingBy(Task::type));
+        var e =  map.entrySet().stream().max(  (entry1, entry2) -> {
+            if (entry1.getValue().size() == entry2.getValue().size()) {
+                return -1 * entry1.getKey().compareTo(entry2.getKey());
+            } else  {
+                return entry1.getKey().compareTo(entry2.getKey());
+            }
+        } );
+       return e.get().getValue();
     }
 }
 
