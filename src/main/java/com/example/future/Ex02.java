@@ -25,7 +25,10 @@ public class Ex02 {
     }
 
     public static CompletableFuture<List<Person>> savePersons(List<Person> persons) {
-        return null; //TODO
+        var futures = persons.stream().map(p -> savePerson(p)).collect(Collectors.toList());
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream().map(CompletableFuture::join).collect(Collectors.toList()));
     }
 
     public static void main(String[] args) {
