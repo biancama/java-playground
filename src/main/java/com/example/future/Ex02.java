@@ -1,8 +1,10 @@
 package com.example.future;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -31,13 +33,33 @@ public class Ex02 {
                 .thenApply(v -> futures.stream().map(CompletableFuture::join).collect(Collectors.toList()));
     }
 
+    public static CompletableFuture<List<Person>> savePersonsSeq(List<Person> people) {
+        var futures = people.stream().map(p -> savePerson(p)).collect(Collectors.toList());
+
+        CompletableFuture<List<Person>> result = CompletableFuture.completedFuture(new ArrayList<>());
+        for (CompletableFuture<Person> future : futures) {
+            result.whenComplete((list, throwable) -> {
+                try {
+                    list.add(future.get());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        return result;
+    }
+
     public static void main(String[] args) {
         Person massimo = new Person("massimo", 35);
         Person pablo = new Person("pablo", 25);
 
         //savePerson(massimo).join();
 
-        savePersons(Arrays.asList(massimo, pablo)).join();
+        //savePersons(Arrays.asList(massimo, pablo)).join();
+        savePersonsSeq(Arrays.asList(massimo, pablo)).join();
         System.out.println("Saved");
         System.exit(0);
     }
